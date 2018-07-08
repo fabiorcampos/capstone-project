@@ -2,7 +2,9 @@
 title: "Exploratory"
 author: "Fábio Rocha Campos"
 date: "1 de julho de 2018"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -15,9 +17,9 @@ This project is to: 1. Demonstrate that I've downloaded the data and have succes
 
 ## Data Processing
 
+The data processing envolves: 1) download data; 2) summarize; 3) make a sample and 4) Treat the data. During the text I will explain the details of each step. To do this analysis I use this libraries: stringi, tm, ngram, ggplot2, RWeka and SnowBallC.
 
-
-```{r}
+```{r include=FALSE}
 library(stringi)
 library(tm)
 library(ngram)
@@ -28,114 +30,142 @@ library(SnowballC)
 
 ### 1. Download Data
 
-```{r}
+I downloaded the data according to the instructions of material course. Using the readlines I create three variables for each one of this files: en_US.news, en_US.blogs, en_US.twitter. 
+
+```{r include=FALSE}
 ### load files
-news <- readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone/capstone-data-science/data/en_US/en_US.news.txt", encoding = "UTF-8", skipNul = TRUE)
-blogs <- readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone/capstone-data-science/data/en_US/en_US.blogs.txt", encoding = "UTF-8", skipNul = TRUE)
-twitter <- readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone/capstone-data-science/data/en_US/en_US.twitter.txt", encoding = "UTF-8", skipNul = TRUE)
+news = readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.news.txt", encoding = "UTF-8", skipNul = TRUE)
+blogs = readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.blogs.txt", encoding = "UTF-8", skipNul = TRUE)
+twitter = readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.twitter.txt", encoding = "UTF-8", skipNul = TRUE)
 ```
 
 ### 2. Summarize Data
 
-```{r}
+Below I summarize the files to identify the size, length lines, longest lines in each files and means words in each files. After the scripts I will describe some insights of each files.  
+
 #### Size in MB
-nsize <- file.info("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone/capstone-data-science//data/en_US/en_US.news.txt")$size / 1024 ^ 2
-bsize <- file.info("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone/capstone-data-science/data/en_US/en_US.blogs.txt")$size / 1024 ^ 2
-tsize <- file.info("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone/capstone-data-science/data/en_US/en_US.twitter.txt")$size / 1024 ^ 2
-totalsize <- nsize + bsize + tsize
-```
 
 ```{r}
+nsize = file.info("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.news.txt")$size / 1024 ^ 2
+bsize = file.info("//home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.blogs.txt")$size / 1024 ^ 2
+tsize = file.info("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.twitter.txt")$size / 1024 ^ 2
+totalsize = nsize + bsize + tsize
+```
+
 #### Length Lines 
-nlines <- length(news)
-blines <- length(blogs)
-tlines <- length(twitter)
-totallength <- nlines + blines + tlines
-```
 
 ```{r}
+nlines = length(news)
+blines = length(blogs)
+tlines = length(twitter)
+totallength = nlines + blines + tlines
+```
+
 #### Longest line in each file
-nmax <- max(stri_count_words(news))
-bmax <- max(stri_count_words(blogs))
-tmax <- max(stri_count_words(twitter))
-totalmax <- nmax + bmax + tmax
+
+```{r}
+nmax = max(stri_count_words(news))
+bmax = max(stri_count_words(blogs))
+tmax = max(stri_count_words(twitter))
+totalmax = nmax + bmax + tmax
+```
+
+#### Mean words in each file
+
+```{r}
+nmean = mean(stri_count_words(news))
+bmean = mean(stri_count_words(blogs))
+tmean = mean(stri_count_words(twitter))
+meantotal = nmean + bmean + tmean / 3
+
+```
+
+### Summary
+
+The files that we will use to create a model have aproximatelly 556 mb of texts. Below I print a data.frame that contains the summary of files that I will use. 
+
+```{r}
+names = c("News", "Blogs", "Twitter")
+dfsummary = data.frame(Size_in_mb = c(nsize, bsize, tsize),
+                        Length_lines = c(nlines, blines, tlines),
+                        Longest_line = c(nmax, bmax, tmax),
+                        Meanwords = c(nmean, bmean, tmean),
+                        Total = c(totalsize, totallength, totalmax), row.names = names)
 ```
 
 ```{r}
-#### Mean words in each file
-nmean <- mean(stri_count_words(news))
-bmean <- mean(stri_count_words(blogs))
-tmean <- mean(stri_count_words(twitter))
-meantotal <- nmean + bmean + tmean / 3
-
-names <- c("news", "blogs", "twitter")
-
-dfsummary <- data.frame(sizeinmb = c(nsize, bsize, tsize),
-                        lengthlines = c(nlines, blines, tlines),
-                        longestline = c(nmax, bmax, tmax),
-                        meanwords = c(nmean, bmean, tmean),
-                        total = c(totalsize, totallength, totalmax), row.names = names)
 print(dfsummary)
 ```
 
 ### 3. Create Sample File
 
+THe sample file contains 5% of each one files. 
+
 ```{r}
 ### Create a sample file
 set.seed(5150)
-sample <- c(sample(news, length(news) * .010),
-            sample(blogs, length(blogs) * 010),
-            sample(twitter, length(twitter) * .010))
+sample = c(sample(news, length(news) * .005),
+            sample(blogs, length(blogs) * .005),
+            sample(twitter, length(twitter) * .005))
 ```
 
 ### 4. Clean and treat data
 
+To treat the data I use the 'tm' package and I remove all the characters that not contribute with the model. 
+
 ```{r}
 ### Clean and organize data
-sample <- iconv(sample, 'UTF-8', 'ASCII')
-mycorpus <- VCorpus(VectorSource(sample))
-toSpace <- content_transformer(function(x, pattern) gsub(pattern, " ", x))
-mycorpus <- tm_map(mycorpus, toSpace, "(f|ht)tp(s?)://(.*)[.][a-z]+")
-mycorpus <- tm_map(mycorpus, toSpace, "@[^\\s]+")
-mycorpus <- tm_map(mycorpus, tolower)
-mycorpus <- tm_map(mycorpus, function(x) iconv(enc2utf8(x), sub = "byte"))
-mycorpus <- tm_map(mycorpus, removeWords, stopwords("english"))
-mycorpus <- tm_map(mycorpus, stemDocument)
-mycorpus <- tm_map(mycorpus, removeNumbers)
-mycorpus <- tm_map(mycorpus, stripWhitespace)
-mycorpus <- tm_map(mycorpus, PlainTextDocument)
+sample = iconv(sample, 'UTF-8', 'ASCII')
+mycorpus = VCorpus(VectorSource(sample))
+toSpace = content_transformer(function(x, pattern) gsub(pattern, " ", x))
+mycorpus = tm_map(mycorpus, toSpace, "(f|ht)tp(s?)://(.*)[.][a-z]+")
+mycorpus = tm_map(mycorpus, toSpace, "@[^\\s]+")
+mycorpus = tm_map(mycorpus, tolower)
+mycorpus = tm_map(mycorpus, function(x) iconv(enc2utf8(x), sub = "byte"))
+mycorpus = tm_map(mycorpus, removeWords, stopwords("english"))
+mycorpus = tm_map(mycorpus, stemDocument)
+mycorpus = tm_map(mycorpus, removeNumbers)
+mycorpus = tm_map(mycorpus, stripWhitespace)
+mycorpus = tm_map(mycorpus, PlainTextDocument)
 ```
 
 ## Exploratory Analysis
 
+First I created a getfreq function and using the 'Weka' package to tokenizer two and tri gram.
+
 ```{r}
 ### Create function to n-grams
-getFreq <- function(tdm) {
-      freq <- sort(rowSums(as.matrix(tdm)), decreasing = TRUE)
+getFreq = function(tdm) {
+      freq = sort(rowSums(as.matrix(tdm)), decreasing = TRUE)
       return(data.frame(word = names(freq), freq = freq))
 }
-bigram <- function(x) NGramTokenizer(x, Weka_control(min = 2, max = 2))
-trigram <- function(x) NGramTokenizer(x, Weka_control(min = 3, max = 3))
-makePlot <- function(data, label) {
+bigram = function(x) NGramTokenizer(x, Weka_control(min = 2, max = 2))
+trigram = function(x) NGramTokenizer(x, Weka_control(min = 3, max = 3))
+makePlot = function(data, label) {
       ggplot(data[1:30,], aes(reorder(word, -freq), freq)) +
             labs(x = label, y = "Frequency") +
             theme(axis.text.x = element_text(angle = 60, size = 12, hjust = 1)) +
-            geom_bar(stat = "identity", fill = I("red"))
+            geom_bar(stat = "identity", fill = I("blue"))
 }
 
-freq1 <- getFreq(removeSparseTerms(TermDocumentMatrix(mycorpus), 0.9999))
-freq2 <- getFreq(removeSparseTerms(TermDocumentMatrix(mycorpus, control = list(tokenize = bigram)), 0.9999))
-freq3 <- getFreq(removeSparseTerms(TermDocumentMatrix(mycorpus, control = list(tokenize = trigram)), 0.9999))
+freq1 = getFreq(removeSparseTerms(TermDocumentMatrix(mycorpus), 0.9999))
+freq2 = getFreq(removeSparseTerms(TermDocumentMatrix(mycorpus, control = list(tokenize = bigram)), 0.9999))
+freq3 = getFreq(removeSparseTerms(TermDocumentMatrix(mycorpus, control = list(tokenize = trigram)), 0.9999))
 ```
 
 ## Conclusion and Next Steps
 
-You can also embed plots, for example:
+I show the results in 3 plots that presents the most common words used and the Bigrams and Trigrams. This first version of algorithm need to be improve. My intention in the next step of capstone project is including new stopwords. 
 
-```{r pressure, echo=FALSE}
+```{r echo=FALSE}
 makePlot(freq1, "30 Most Common Unigrams")
+```
+
+```{r echo=FALSE}
 makePlot(freq2, "30 Most Common Bigrams")
+```
+
+```{r echo=FALSE}
 makePlot(freq3, "30 Most Common Trigrams")
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

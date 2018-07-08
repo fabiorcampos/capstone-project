@@ -6,16 +6,16 @@ library(RWeka)
 library(SnowballC)
 
 ### load files
-news <- readLines("C:/Users/fcampos/OneDrive - Cisa Trading/Documents/Estudos/Coursera_Spec/datascience/capstone-data-science/capstone-data-science/data/en_US/en_US.news.txt", encoding = "UTF-8", skipNul = TRUE)
-blogs <- readLines("C:/Users/fcampos/OneDrive - Cisa Trading/Documents/Estudos/Coursera_Spec/datascience/capstone-data-science/capstone-data-science/data/en_US/en_US.blogs.txt", encoding = "UTF-8", skipNul = TRUE)
-twitter <- readLines("C:/Users/fcampos/OneDrive - Cisa Trading/Documents/Estudos/Coursera_Spec/datascience/capstone-data-science/capstone-data-science/data/en_US/en_US.twitter.txt", encoding = "UTF-8", skipNul = TRUE)
+news <- readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.news.txt", encoding = "UTF-8", skipNul = TRUE)
+blogs <- readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.blogs.txt", encoding = "UTF-8", skipNul = TRUE)
+twitter <- readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.twitter.txt", encoding = "UTF-8", skipNul = TRUE)
 
 ### Information of files
 
 #### Size in MB
-nsize <- file.info("C:/Users/fcampos/OneDrive - Cisa Trading/Documents/Estudos/Coursera_Spec/datascience/capstone-data-science/capstone-data-science/data/en_US/en_US.news.txt")$size / 1024 ^ 2
-bsize <- file.info("C:/Users/fcampos/OneDrive - Cisa Trading/Documents/Estudos/Coursera_Spec/datascience/capstone-data-science/capstone-data-science/data/en_US/en_US.blogs.txt")$size / 1024 ^ 2
-tsize <- file.info("C:/Users/fcampos/OneDrive - Cisa Trading/Documents/Estudos/Coursera_Spec/datascience/capstone-data-science/capstone-data-science/data/en_US/en_US.twitter.txt")$size / 1024 ^ 2
+nsize <- file.info("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.news.txt")$size / 1024 ^ 2
+bsize <- file.info("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.blogs.txt")$size / 1024 ^ 2
+tsize <- file.info("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.twitter.txt")$size / 1024 ^ 2
 totalsize <- nsize + bsize + tsize
 
 #### Length Lines 
@@ -50,7 +50,7 @@ print(dfsummary)
 ### Create a sample file
 set.seed(5150)
 sample <- c(sample(news, length(news) * .005),
-            sample(blogs, length(blogs) * 005),
+            sample(blogs, length(blogs) * .005),
             sample(twitter, length(twitter) * .005))
 
 
