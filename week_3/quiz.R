@@ -1,6 +1,7 @@
 ### Load Libraries
 library(quanteda)
 library(ANLP)
+library(tm)
 
 ### load files
 news <- readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.news.txt", encoding = "UTF-8", skipNul = TRUE)
@@ -8,7 +9,7 @@ blogs <- readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/cap
 twitter <- readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.twitter.txt", encoding = "UTF-8", skipNul = TRUE)
 
 ### Create a sample file
-set.seed(5150)
+set.seed(1020)
 sample = c(sample(news, length(news) * .005),
            sample(blogs, length(blogs) * .005),
            sample(twitter, length(twitter) * .005))
