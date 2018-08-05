@@ -1,5 +1,6 @@
 ### Load Libraries
 library(quanteda)
+library(ANLP)
 
 ### load files
 news <- readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.news.txt", encoding = "UTF-8", skipNul = TRUE)
@@ -23,8 +24,8 @@ tokens = tokens(tokens, what = "word",
                 remove_symbols = TRUE, remove_hyphens = TRUE,
                 remove_twitter = TRUE, remove_url = TRUE)
 
-#tokens = tokens_select(tokens, stopwords("en", source = "stopwords-iso"),
-#                       selection = "remove")
+tokens = tokens_select(tokens, stopwords("english"),
+                       selection = "remove")
 
 ### Remove specific terms in Twitter
 tokens = tokens_select(tokens, c("lol", "rt"), selection = "remove", padding = FALSE)
@@ -32,32 +33,52 @@ tokens = tokens_select(tokens, c("lol", "rt"), selection = "remove", padding = F
 ### Ngram1 and frequencies
 token1_dfm = dfm(tokens, tolower = TRUE, ngrams = 1)
 token1_freq = textstat_frequency(token1_dfm)
-save(token1_freq, file = "./week3/freq/freq1.RData")
+save(token1_freq, file = "./week_3/freq/freq1.RData")
 
 ### Ngram2
 token2_dfm = dfm(tokens, tolower = TRUE, ngrams = 2)
 token2_freq = textstat_frequency(token2_dfm)
-save(token2_freq, file = "./week3/freq/freq2.RData")
+save(token2_freq, file = "./week_3/freq/freq2.RData")
 
 ### Ngram3
 token3_dfm = dfm(tokens, tolower = TRUE, ngrams = 3)
 token3_freq = textstat_frequency(token3_dfm)
-save(token3_freq, file = "./week3/freq/freq3.RData")
+save(token3_freq, file = "./week_3/freq/freq3.RData")
 
 ### Ngram4
 token4_dfm = dfm(tokens, tolower = TRUE, ngrams = 4)
 token4_freq = textstat_frequency(token4_dfm)
-save(token4_freq, file = "./week3/freq/freq4.RData")
+save(token4_freq, file = "./week_3/freq/freq4.RData")
 
 ### Ngram5
 token5_dfm = dfm(tokens, tolower = TRUE, ngrams = 5)
 token5_freq = textstat_frequency(token5_dfm)
-save(token5_freq, file = "./week3/freq/freq5.RData")
+save(token5_freq, file = "./week_3/freq/freq5.RData")
 
 ### Ngram6
 token6_dfm = dfm(tokens, tolower = TRUE, ngrams = 6)
 token6_freq = textstat_frequency(token6_dfm)
-save(token6_freq, file = "./week3/freq/freq6.RData")
+save(token6_freq, file = "./week_3/freq/freq6.RData")
+
+### Prepare tokens frequencies data.frame to ANLP Predict Model Backoff
+listtokens = c(token1_freq, token2_freq,token3_freq,token4_freq,token5_freq,token6_freq)
+names = c("word", "freq")
+token_prep = function(data) {
+      data = data[ ,-c(3:5)]
+      `names<-`(data, names)
+}
+
+token1_freq = token_prep(token1_freq)
+token2_freq = token_prep(token2_freq)
+token3_freq = token_prep(token3_freq)
+token4_freq = token_prep(token4_freq)
+token5_freq = token_prep(token5_freq)
+token6_freq = token_prep(token6_freq)
+
+### NGram Model List
+
+nGramModelsList = list(token1_freq, token2_freq,token3_freq,token4_freq,token5_freq,token6_freq)
+test = list(token1_freq, token2_freq)
 
 ### Exercises
 
@@ -90,4 +111,11 @@ nr9 = "Be grateful for the good times and keep the faith during the"
 
 #### Exercise 10
 nr10 = "If this isn't the cutest thing you've ever seen, then you must be"
+
+listexercises = c(nr1, nr2, nr3, nr4, nr5, nr6, nr7, nr8, nr9, nr10)
+
+for (i in listexercises) {
+      x = predict_Backoff(i, nGramModelsList)
+      print(x)
+}
 
