@@ -1,12 +1,10 @@
 ### Load Libraries
 library(quanteda)
-library(ANLP)
-library(tm)
 
 ### load files
-news <- readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.news.txt", encoding = "UTF-8", skipNul = TRUE)
-blogs <- readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.blogs.txt", encoding = "UTF-8", skipNul = TRUE)
-twitter <- readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.twitter.txt", encoding = "UTF-8", skipNul = TRUE)
+news = readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.news.txt", encoding = "UTF-8", skipNul = TRUE)
+blogs = readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.blogs.txt", encoding = "UTF-8", skipNul = TRUE)
+twitter = readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.twitter.txt", encoding = "UTF-8", skipNul = TRUE)
 
 ### Create a sample file
 set.seed(1020)
@@ -75,11 +73,6 @@ token3_freq = token_prep(token3_freq)
 token4_freq = token_prep(token4_freq)
 token5_freq = token_prep(token5_freq)
 token6_freq = token_prep(token6_freq)
-
-### NGram Model List
-
-nGramModelsList = list(token1_freq, token2_freq,token3_freq,token4_freq,token5_freq,token6_freq)
-test = list(token1_freq, token2_freq)
 
 ### Exercises
 
