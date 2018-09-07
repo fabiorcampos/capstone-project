@@ -1,5 +1,8 @@
 ### Load Libraries
 library(quanteda)
+library(dplyr)
+library(stringr)
+library(tibble)
 
 ### load files
 news = readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/capstone-project/data/en_US/en_US.news.txt", encoding = "UTF-8", skipNul = TRUE)
@@ -8,9 +11,12 @@ twitter = readLines("/home/fabio/MEGA/CURSOS_ONLINE/datasciencespecialization/ca
 
 ### Create a sample file
 set.seed(1020)
-sample = c(sample(news, length(news) * .005),
-           sample(blogs, length(blogs) * .005),
-           sample(twitter, length(twitter) * .005))
+sample = c(sample(news, length(news) * .010),
+           sample(blogs, length(blogs) * .010),
+           sample(twitter, length(twitter) * .010))
+
+### Remove special char"
+sample = gsub("_", " ", sample)
 
 ### create a corpus
 my_corpus = corpus(sample)
@@ -21,58 +27,108 @@ tokens = my_corpus
 tokens = tokens(tokens, what = "word",
                 remove_numbers = TRUE, remove_punct = TRUE,
                 remove_symbols = TRUE, remove_hyphens = TRUE,
-                remove_twitter = TRUE, remove_url = TRUE)
+                remove_twitter = TRUE, remove_url = TRUE, 
+                remove_separators = TRUE)
 
-tokens = tokens_select(tokens, stopwords("english"),
-                       selection = "remove")
+#tokens = tokens_select(tokens, stopwords("english"),
+#                       selection = "remove")
 
 ### Remove specific terms in Twitter
-tokens = tokens_select(tokens, c("lol", "rt"), selection = "remove", padding = FALSE)
+tokens = tokens_select(tokens, c("lol", "rt", "_"), selection = "remove", padding = FALSE)
 
 ### Ngram1 and frequencies
 token1_dfm = dfm(tokens, tolower = TRUE, ngrams = 1)
 token1_freq = textstat_frequency(token1_dfm)
-save(token1_freq, file = "./week_3/freq/freq1.RData")
 
 ### Ngram2
 token2_dfm = dfm(tokens, tolower = TRUE, ngrams = 2)
 token2_freq = textstat_frequency(token2_dfm)
-save(token2_freq, file = "./week_3/freq/freq2.RData")
 
 ### Ngram3
 token3_dfm = dfm(tokens, tolower = TRUE, ngrams = 3)
 token3_freq = textstat_frequency(token3_dfm)
-save(token3_freq, file = "./week_3/freq/freq3.RData")
 
 ### Ngram4
 token4_dfm = dfm(tokens, tolower = TRUE, ngrams = 4)
 token4_freq = textstat_frequency(token4_dfm)
-save(token4_freq, file = "./week_3/freq/freq4.RData")
 
 ### Ngram5
 token5_dfm = dfm(tokens, tolower = TRUE, ngrams = 5)
 token5_freq = textstat_frequency(token5_dfm)
-save(token5_freq, file = "./week_3/freq/freq5.RData")
 
 ### Ngram6
 token6_dfm = dfm(tokens, tolower = TRUE, ngrams = 6)
 token6_freq = textstat_frequency(token6_dfm)
-save(token6_freq, file = "./week_3/freq/freq6.RData")
 
-### Prepare tokens frequencies data.frame to ANLP Predict Model Backoff
-listtokens = c(token1_freq, token2_freq,token3_freq,token4_freq,token5_freq,token6_freq)
-names = c("word", "freq")
-token_prep = function(data) {
-      data = data[ ,-c(3:5)]
-      `names<-`(data, names)
+### Remove unnecessary variables
+rm(token1_dfm)
+rm(token2_dfm)
+rm(token3_dfm)
+rm(token4_dfm)
+rm(token5_dfm)
+rm(token6_dfm)
+
+### Function to prepare data.frame
+cleanFun = function(df) {
+      df = as.data.frame(df)
+      df = df[,-c(3:5)]
+      df$prob = df$frequency/sum(df$frequency)
+      df = df[,-2]
+      if (str_count(df$feature, pattern = "_") == 1) {
+            b = structure(data.frame(
+                  matrix(unlist(strsplit(df$feature,"_")),length(df$feature),2,T)),
+                  names=c("A","B"))
+            df = cbind(df, b)
+            df = df[c("A", "prob", "B")]
+      }
+      else if (str_count(df$feature, pattern = "_") == 2) {
+            c = structure(data.frame(
+                  matrix(unlist(strsplit(df$feature,"_")),length(df$feature),3,T)),
+                  names=c("A","B","C"))
+            df = cbind(df, c)
+            df$A = paste(df$A, df$B, sep = " ")
+            df = df[c("A", "prob", "C")]
+      }
+      else if (str_count(df$feature, pattern = "_") == 3) {
+            d = structure(data.frame(
+                  matrix(unlist(strsplit(df$feature,"_")),length(df$feature),4,T)),
+                  names=c("A","B","C", "D"))
+            df = cbind(df, d)
+            df$A = paste(df$A, df$B, df$C, sep = " ")
+            df = df[c("A", "prob", "D")]
+      }
+      else if (str_count(df$feature, pattern = "_") == 4) {
+            e = structure(data.frame(
+                  matrix(unlist(strsplit(df$feature,"_")),length(df$feature),5,T)),
+                  names=c("A","B","C","D","E"))
+            df = cbind(df, e)
+            df$A = paste(df$A, df$B, df$C, df$D, sep = " ")
+            df = df[c("A", "prob", "E")]
+      }
+      else if (str_count(df$feature, pattern = "_") == 5) {
+            f = structure(data.frame(
+                  matrix(unlist(strsplit(df$feature,"_")),length(df$feature),6,T)),
+                  names=c("A","B","C","D","E","F"))
+            df = cbind(df, f)
+            df$A = paste(df$A, df$B, df$C, df$D, df$E, sep = " ")
+            df = df[c("A", "prob", "F")]
+      }
 }
 
-token1_freq = token_prep(token1_freq)
-token2_freq = token_prep(token2_freq)
-token3_freq = token_prep(token3_freq)
-token4_freq = token_prep(token4_freq)
-token5_freq = token_prep(token5_freq)
-token6_freq = token_prep(token6_freq)
+### Adjust data.frames
+token2_freq = cleanFun(token2_freq)
+token3_freq = cleanFun(token3_freq)
+token4_freq = cleanFun(token4_freq)
+token5_freq = cleanFun(token5_freq)
+token6_freq = cleanFun(token6_freq)
+
+### Export Ngram data.frames frequencies
+save(token1_freq, file = "./week_3/freq/freq1.RData")
+save(token2_freq, file = "./week_3/freq/freq2.RData")
+save(token3_freq, file = "./week_3/freq/freq3.RData")
+save(token4_freq, file = "./week_3/freq/freq4.RData")
+save(token5_freq, file = "./week_3/freq/freq5.RData")
+save(token6_freq, file = "./week_3/freq/freq6.RData")
 
 ### Exercises
 
