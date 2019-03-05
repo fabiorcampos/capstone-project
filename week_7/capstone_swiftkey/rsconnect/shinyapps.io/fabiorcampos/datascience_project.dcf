@@ -1,0 +1,12 @@
+name: datascience_project
+title: datascience_project
+username:
+account: fabiorcampos
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 765419
+bundleId: 1917362
+url: https://fabiorcampos.shinyapps.io/datascience_project/
+when: 1551802827.64781
+asMultiple: FALSE
+asStatic: FALSE
